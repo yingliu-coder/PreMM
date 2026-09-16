@@ -49,7 +49,7 @@ class LearnableTimeSeriesToImage(nn.Module):
 
         return x_enc
 
-class PreVLM(nn.Module):
+class PreMM(nn.Module):
     def __init__(self, config, device):
         super(PreVLM, self).__init__()
         self.config = config
