@@ -40,7 +40,7 @@ def create_parser():
     # --------------- Basic ---------------
     parser = argparse.ArgumentParser()
     
-    parser.add_argument('--backbone',       type=str,   default='PreVLM',        help='backbone model for deterministic prediction')
+    parser.add_argument('--backbone',       type=str,   default='PreMM',        help='backbone model for deterministic prediction')
     parser.add_argument("--seed",           type=int,   default=0,              help='Experiment seed')
     parser.add_argument("--exp_dir",        type=str,   default='basic_exps',   help="experiment directory")
     parser.add_argument("--exp_note",       type=str,   default=None,           help="additional note for experiment")
