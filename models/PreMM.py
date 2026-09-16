@@ -51,7 +51,7 @@ class LearnableTimeSeriesToImage(nn.Module):
 
 class PreMM(nn.Module):
     def __init__(self, config, device):
-        super(PreVLM, self).__init__()
+        super(PreMM, self).__init__()
         self.config = config
         self.vlm_manager = VLMManager(config, device)
         self.device = device
