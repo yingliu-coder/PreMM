@@ -23,7 +23,6 @@ from moviepy.editor import ImageSequenceClip
 def change_layout_np(data,
                      in_layout='NHWT', out_layout='NHWT',
                      ret_contiguous=False):
-    # first convert to 'NHWT'
     if in_layout == 'NHWT':
         pass
     elif in_layout == 'NTHW':
@@ -90,7 +89,6 @@ def change_layout_np(data,
 def change_layout_torch(data,
                         in_layout='NHWT', out_layout='NHWT',
                         ret_contiguous=False):
-    # first convert to 'NHWT'
     if in_layout == 'NHWT':
         pass
     elif in_layout == 'NTHW':
@@ -131,7 +129,6 @@ def change_layout_torch(data,
     return data
 
 
-# SEVIR Dataset constants
 SEVIR_DATA_TYPES = ['vis', 'ir069', 'ir107', 'vil', 'lght']
 SEVIR_RAW_DTYPES = {'vis': np.int16,
                     'ir069': np.int16,
@@ -140,12 +137,12 @@ SEVIR_RAW_DTYPES = {'vis': np.int16,
                     'lght': np.int16}
 LIGHTING_FRAME_TIMES = np.arange(- 120.0, 125.0, 5) * 60
 SEVIR_DATA_SHAPE = {'lght': (48, 48), }
-PREPROCESS_SCALE_SEVIR = {'vis': 1,  # Not utilized in original paper
+PREPROCESS_SCALE_SEVIR = {'vis': 1, 
                           'ir069': 1 / 1174.68,
                           'ir107': 1 / 2562.43,
                           'vil': 1 / 47.54,
                           'lght': 1 / 0.60517}
-PREPROCESS_OFFSET_SEVIR = {'vis': 0,  # Not utilized in original paper
+PREPROCESS_OFFSET_SEVIR = {'vis': 0, 
                            'ir069': 3683.58,
                            'ir107': 1552.80,
                            'vil': - 33.44,
@@ -153,28 +150,17 @@ PREPROCESS_OFFSET_SEVIR = {'vis': 0,  # Not utilized in original paper
 PREPROCESS_SCALE_01 = {'vis': 1,
                        'ir069': 1,
                        'ir107': 1,
-                       'vil': 1 / 255,  # currently the only one implemented
+                       'vil': 1 / 255, 
                        'lght': 1}
 PREPROCESS_OFFSET_01 = {'vis': 0,
                         'ir069': 0,
                         'ir107': 0,
-                        'vil': 0,  # currently the only one implemented
+                        'vil': 0, 
                         'lght': 0}
 
 
 
 class SEVIRDataLoader:
-    r"""
-    DataLoader that loads SEVIR sequences, and spilts each event
-    into segments according to specified sequence length.
-
-    Event Frames:
-        [-----------------------raw_seq_len----------------------]
-        [-----seq_len-----]
-        <--stride-->[-----seq_len-----]
-                    <--stride-->[-----seq_len-----]
-                                        ...
-    """
     def __init__(self,
                  dataset_dir: str,
                  data_types: Sequence[str] = None,
@@ -200,71 +186,7 @@ class SEVIRDataLoader:
                  rescale_method: str = '01',
                  downsample_dict: Dict[str, Sequence[int]] = None,
                  verbose: bool = False):
-        r"""
-        Parameters
-        ----------
-        data_types
-            A subset of SEVIR_DATA_TYPES.
-        seq_len
-            The length of the data sequences. Should be smaller than the max length raw_seq_len.
-        raw_seq_len
-            The length of the raw data sequences.
-        sample_mode
-            'random' or 'sequent'
-        stride
-            Useful when sample_mode == 'sequent'
-            stride must not be smaller than out_len to prevent data leakage in testing.
-        batch_size
-            Number of sequences in one batch.
-        layout
-            str: consists of batch_size 'N', seq_len 'T', channel 'C', height 'H', width 'W'
-            The layout of sampled data. Raw data layout is 'NHWT'.
-            valid layout: 'NHWT', 'NTHW', 'NTCHW', 'TNHW', 'TNCHW'.
-        num_shard
-            Split the whole dataset into num_shard parts for distributed training.
-        rank
-            Rank of the current process within num_shard.
-        split_mode: str
-            if 'ceil', all `num_shard` dataloaders have the same length = ceil(total_len / num_shard).
-            Different dataloaders may have some duplicated data batches, if the total size of datasets is not divided by num_shard.
-            if 'floor', all `num_shard` dataloaders have the same length = floor(total_len / num_shard).
-            The last several data batches may be wasted, if the total size of datasets is not divided by num_shard.
-            if 'uneven', the last datasets has larger length when the total length is not divided by num_shard.
-            The uneven split leads to synchronization error in dist.all_reduce() or dist.barrier().
-            See related issue: https://github.com/pytorch/pytorch/issues/33148
-            Notice: this also affects the behavior of `self.use_up`.
-        sevir_catalog
-            Name of SEVIR catalog CSV file.
-        sevir_data_dir
-            Directory path to SEVIR data.
-        start_date
-            Start time of SEVIR samples to generate.
-        end_date
-            End time of SEVIR samples to generate.
-        datetime_filter
-            function
-            Mask function applied to time_utc column of catalog (return true to keep the row).
-            Pass function of the form   lambda t : COND(t)
-            Example:  lambda t: np.logical_and(t.dt.hour>=13,t.dt.hour<=21)  # Generate only day-time events
-        catalog_filter
-            function or None or 'default'
-            Mask function applied to entire catalog dataframe (return true to keep row).
-            Pass function of the form lambda catalog:  COND(catalog)
-            Example:  lambda c:  [s[0]=='S' for s in c.id]   # Generate only the 'S' events
-        shuffle
-            bool, If True, data samples are shuffled before each epoch.
-        shuffle_seed
-            int, Seed to use for shuffling.
-        output_type
-            np.dtype, dtype of generated tensors
-        preprocess
-            bool, If True, self.preprocess_data_dict(data_dict) is called before each sample generated
-        downsample_dict:
-            dict, downsample_dict.keys() == data_types. downsample_dict[key] is a Sequence of (t_factor, h_factor, w_factor),
-            representing the downsampling factors of all dimensions.
-        verbose
-            bool, verbose when opening raw data files
-        """
+        
         super(SEVIRDataLoader, self).__init__()
 
         if data_types is None:
@@ -278,7 +200,6 @@ class SEVIRDataLoader:
         sevir_data_dir = os.path.join(dataset_dir, "data")
 
 
-        # configs which should not be modified
         self._dtypes = SEVIR_RAW_DTYPES
         self.lght_frame_times = LIGHTING_FRAME_TIMES
         self.data_shape = SEVIR_DATA_SHAPE
@@ -337,17 +258,11 @@ class SEVIRDataLoader:
         self.reset()
 
     def _compute_samples(self):
-        """
-        Computes the list of samples in catalog to be used. This sets self._samples
-        """
-        # locate all events containing colocated data_types
+
         imgt = self.data_types
         imgts = set(imgt)
         filtcat = self.catalog[ np.logical_or.reduce([self.catalog.img_type==i for i in imgt]) ]
-        # remove rows missing one or more requested img_types
         filtcat = filtcat.groupby('id').filter(lambda x: imgts.issubset(set(x['img_type'])))
-        # If there are repeated IDs, remove them (this is a bug in SEVIR)
-        # TODO: is it necessary to keep one of them instead of deleting them all
         filtcat = filtcat.groupby('id').filter(lambda x: x.shape[0]==len(imgt))
         self._samples = filtcat.groupby('id').apply(lambda df: self._df_to_series(df,imgt) )
         if self.shuffle:
@@ -368,9 +283,6 @@ class SEVIRDataLoader:
         return pd.DataFrame(d)
 
     def _open_files(self, verbose=True):
-        """
-        Opens HDF files
-        """
         imgt = self.data_types
         hdf_filenames = []
         for t in imgt:
@@ -382,9 +294,6 @@ class SEVIRDataLoader:
             self._hdf_files[f] = h5py.File(self.sevir_data_dir + '/' + f, 'r')
 
     def close(self):
-        """
-        Closes all open file handles
-        """
         for f in self._hdf_files:
             self._hdf_files[f].close()
         self._hdf_files = {}
@@ -395,73 +304,40 @@ class SEVIRDataLoader:
 
     @property
     def total_num_seq(self):
-        """
-        The total number of sequences within each shard.
-        Notice that it is not the product of `self.num_seq_per_event` and `self.total_num_event`.
-        """
         return int(self.num_seq_per_event * self.num_event)
 
     @property
     def total_num_event(self):
-        """
-        The total number of events in the whole dataset, before split into different shards.
-        """
         return int(self._samples.shape[0])
 
     @property
     def start_event_idx(self):
-        """
-        The event idx used in certain rank should satisfy event_idx >= start_event_idx
-        """
         return self.total_num_event // self.num_shard * self.rank
 
     @property
     def end_event_idx(self):
-        """
-        The event idx used in certain rank should satisfy event_idx < end_event_idx
-
-        """
         if self.split_mode == 'ceil':
             _last_start_event_idx = self.total_num_event // self.num_shard * (self.num_shard - 1)
             _num_event = self.total_num_event - _last_start_event_idx
             return self.start_event_idx + _num_event
         elif self.split_mode == 'floor':
             return self.total_num_event // self.num_shard * (self.rank + 1)
-        else:  # self.split_mode == 'uneven':
-            if self.rank == self.num_shard - 1:  # the last process
+        else:  
+            if self.rank == self.num_shard - 1: 
                 return self.total_num_event
             else:
                 return self.total_num_event // self.num_shard * (self.rank + 1)
 
     @property
     def num_event(self):
-        """
-        The number of events split into each rank
-        """
         return self.end_event_idx - self.start_event_idx
 
     def _read_data(self, row, data):
-        """
-        Iteratively read data into data dict. Finally data[imgt] gets shape (batch_size, height, width, raw_seq_len).
-
-        Parameters
-        ----------
-        row
-            A series with fields IMGTYPE_filename, IMGTYPE_index, IMGTYPE_time_index.
-        data
-            Dict, data[imgt] is a data tensor with shape = (tmp_batch_size, height, width, raw_seq_len).
-
-        Returns
-        -------
-        data
-            Updated data. Updated shape = (tmp_batch_size + 1, height, width, raw_seq_len).
-        """
         imgtyps = np.unique([x.split('_')[0] for x in list(row.keys())])
         for t in imgtyps:
             fname = row[f'{t}_filename']
             idx = row[f'{t}_index']
             t_slice = slice(0, None)
-            # Need to bin lght counts into grid
             if t == 'lght':
                 lght_data = self._hdf_files[fname][idx][:]
                 data_i = self._lght_to_grid(lght_data, t_slice)
@@ -472,39 +348,32 @@ class SEVIRDataLoader:
         return data
 
     def _lght_to_grid(self, data, t_slice=slice(0, None)):
-        """
-        Converts Nx5 lightning data matrix into a 2D grid of pixel counts
-        """
-        # out_size = (48,48,len(self.lght_frame_times)-1) if isinstance(t_slice,(slice,)) else (48,48)
         out_size = (*self.data_shape['lght'], len(self.lght_frame_times)) if t_slice.stop is None else (*self.data_shape['lght'], 1)
         if data.shape[0] == 0:
             return np.zeros((1,) + out_size, dtype=np.float32)
 
-        # filter out points outside the grid
         x, y = data[:, 3], data[:, 4]
         m = np.logical_and.reduce([x >= 0, x < out_size[0], y >= 0, y < out_size[1]])
         data = data[m, :]
         if data.shape[0] == 0:
             return np.zeros((1,) + out_size, dtype=np.float32)
 
-        # Filter/separate times
         t = data[:, 0]
-        if t_slice.stop is not None:  # select only one time bin
+        if t_slice.stop is not None: 
             if t_slice.stop > 0:
                 if t_slice.stop < len(self.lght_frame_times):
                     tm = np.logical_and(t >= self.lght_frame_times[t_slice.stop - 1],
                                         t < self.lght_frame_times[t_slice.stop])
                 else:
                     tm = t >= self.lght_frame_times[-1]
-            else:  # special case:  frame 0 uses lght from frame 1
+            else: 
                 tm = np.logical_and(t >= self.lght_frame_times[0], t < self.lght_frame_times[1])
-            # tm=np.logical_and( (t>=FRAME_TIMES[t_slice],t<FRAME_TIMES[t_slice+1]) )
 
             data = data[tm, :]
             z = np.zeros(data.shape[0], dtype=np.int64)
-        else:  # compute z coordinate based on bin location times
+        else: 
             z = np.digitize(t, self.lght_frame_times) - 1
-            z[z == -1] = 0  # special case:  frame 0 uses lght from frame 1
+            z[z == -1] = 0  
 
         x = data[:, 3].astype(np.int64)
         y = data[:, 4].astype(np.int64)
@@ -516,9 +385,6 @@ class SEVIRDataLoader:
 
     @property
     def sample_count(self):
-        """
-        Record how many times self.__next__() is called.
-        """
         return self._sample_count
 
     def inc_sample_count(self):
@@ -530,18 +396,12 @@ class SEVIRDataLoader:
 
     @property
     def curr_seq_idx(self):
-        """
-        Used only when self.sample_mode == 'sequent'
-        """
         return self._curr_seq_idx
 
     def set_curr_event_idx(self, val):
         self._curr_event_idx = val
 
     def set_curr_seq_idx(self, val):
-        """
-        Used only when self.sample_mode == 'sequent'
-        """
         self._curr_seq_idx = val
 
     def reset(self, shuffle: bool = None):
@@ -554,45 +414,22 @@ class SEVIRDataLoader:
             self.shuffle_samples()
 
     def __len__(self):
-        """
-        Used only when self.sample_mode == 'sequent'
-        """
         return self.total_num_seq // self.batch_size
 
     @property
     def use_up(self):
-        """
-        Check if dataset is used up in 'sequent' mode.
-        """
         if self.sample_mode == 'random':
             return False
-        else:   # self.sample_mode == 'sequent'
-            # compute the remaining number of sequences in current event
+        else: 
             curr_event_remain_seq = self.num_seq_per_event - self.curr_seq_idx
             all_remain_seq = curr_event_remain_seq + (
                         self.end_event_idx - self.curr_event_idx - 1) * self.num_seq_per_event
             if self.split_mode == "floor":
-                # This approach does not cover all available data, but avoid dealing with masks
                 return all_remain_seq < self.batch_size
             else:
                 return all_remain_seq <= 0
 
     def _load_event_batch(self, event_idx, event_batch_size):
-        """
-        Loads a selected batch of events (not batch of sequences) into memory.
-
-        Parameters
-        ----------
-        idx
-        event_batch_size
-            event_batch[i] = all_type_i_available_events[idx:idx + event_batch_size]
-        Returns
-        -------
-        event_batch
-            list of event batches.
-            event_batch[i] is the event batch of the i-th data type.
-            Each event_batch[i] is a np.ndarray with shape = (event_batch_size, height, width, raw_seq_len)
-        """
         event_idx_slice_end = event_idx + event_batch_size
         pad_size = 0
         if event_idx_slice_end > self.end_event_idx:
@@ -647,22 +484,6 @@ class SEVIRDataLoader:
 
     @staticmethod
     def preprocess_data_dict(data_dict, data_types=None, layout='NHWT', rescale='01'):
-        """
-        Parameters
-        ----------
-        data_dict:  Dict[str, Union[np.ndarray, torch.Tensor]]
-        data_types: Sequence[str]
-            The data types that we want to rescale. This mainly excludes "mask" from preprocessing.
-        layout: str
-            consists of batch_size 'N', seq_len 'T', channel 'C', height 'H', width 'W'
-        rescale:    str
-            'sevir': use the offsets and scale factors in original implementation.
-            '01': scale all values to range 0 to 1, currently only supports 'vil'
-        Returns
-        -------
-        data_dict:  Dict[str, Union[np.ndarray, torch.Tensor]]
-            preprocessed data
-        """
         if rescale == 'sevir':
             scale_dict = PREPROCESS_SCALE_SEVIR
             offset_dict = PREPROCESS_OFFSET_SEVIR
@@ -694,20 +515,6 @@ class SEVIRDataLoader:
 
     @staticmethod
     def process_data_dict_back(data_dict, data_types=None, rescale='01'):
-        """
-        Parameters
-        ----------
-        data_dict
-            each data_dict[key] is a torch.Tensor.
-        rescale
-            str:
-                'sevir': data are scaled using the offsets and scale factors in original implementation.
-                '01': data are all scaled to range 0 to 1, currently only supports 'vil'
-        Returns
-        -------
-        data_dict
-            each data_dict[key] is the data processed back in torch.Tensor.
-        """
         if rescale == 'sevir':
             scale_dict = PREPROCESS_SCALE_SEVIR
             offset_dict = PREPROCESS_OFFSET_SEVIR
@@ -726,9 +533,6 @@ class SEVIRDataLoader:
 
     @staticmethod
     def data_dict_to_tensor(data_dict, data_types=None):
-        """
-        Convert each element in data_dict to torch.Tensor (copy without grad).
-        """
         ret_dict = {}
         if data_types is None:
             data_types = data_dict.keys()
@@ -746,18 +550,6 @@ class SEVIRDataLoader:
 
     @staticmethod
     def downsample_data_dict(data_dict, data_types=None, factors_dict=None, layout='NHWT'):
-        """
-        Parameters
-        ----------
-        data_dict:  Dict[str, Union[np.array, torch.Tensor]]
-        factors_dict:   Optional[Dict[str, Sequence[int]]]
-            each element `factors` is a Sequence of int, representing (t_factor, h_factor, w_factor)
-
-        Returns
-        -------
-        downsampled_data_dict:  Dict[str, torch.Tensor]
-            Modify on a deep copy of data_dict instead of directly modifying the original data_dict
-        """
         if factors_dict is None:
             factors_dict = {}
         if data_types is None:
@@ -789,14 +581,6 @@ class SEVIRDataLoader:
         return downsampled_data_dict
 
     def _random_sample(self):
-        """
-        Returns
-        -------
-        ret_dict
-            dict. ret_dict.keys() == self.data_types.
-            If self.preprocess == False:
-                ret_dict[imgt].shape == (batch_size, height, width, seq_len)
-        """
         num_sampled = 0
         event_idx_list = nprand.randint(low=self.start_event_idx,
                                         high=self.end_event_idx,
@@ -821,15 +605,6 @@ class SEVIRDataLoader:
         return ret_dict
 
     def _sequent_sample(self):
-        """
-        Returns
-        -------
-        ret_dict:   Dict
-            `ret_dict.keys()` contains `self.data_types`.
-            `ret_dict["mask"]` is a list of bool, indicating if the data entry is real or padded.
-            If self.preprocess == False:
-                ret_dict[imgt].shape == (batch_size, height, width, seq_len)
-        """
         assert not self.use_up, 'Data loader used up! Reset it to reuse.'
         event_idx = self.curr_event_idx
         seq_idx = self.curr_seq_idx
@@ -876,18 +651,6 @@ class SEVIRDataLoader:
         return ret_dict
 
     def _idx_sample(self, index):
-        """
-        Parameters
-        ----------
-        index
-            The index of the batch to sample.
-        Returns
-        -------
-        ret_dict
-            dict. ret_dict.keys() == self.data_types.
-            If self.preprocess == False:
-                ret_dict[imgt].shape == (batch_size, height, width, seq_len)
-        """
         event_idx = (index * self.batch_size) // self.num_seq_per_event
         seq_idx = (index * self.batch_size) % self.num_seq_per_event
         num_sampled = 0
