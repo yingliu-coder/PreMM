@@ -326,5 +326,5 @@ class PreMM(nn.Module):
             return pred, None
 
 def get_model(config, device):
-    model = PreVLM(config, device)
+    model = PreMM(config, device)
     return model
