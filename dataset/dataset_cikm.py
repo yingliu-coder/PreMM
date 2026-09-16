@@ -10,12 +10,6 @@ from matplotlib import colors
 
 
 class CIKM(Dataset):
-    """
-    cikm.h5:
-        sample num:   [train, test, val] = [8000,4000,2000]
-        every sample: [T, W, H] = [15, 101, 101]
-        data value :  [0,255]
-    """
     def __init__(self, data_path, type='train', img_size=128) -> None:
         super().__init__()
         self.data_path = data_path
@@ -89,12 +83,10 @@ HMF_COLORS = np.array([
 
 def gray2color(image, **kwargs):
 
-    # 定义颜色映射和边界
     cmap = colors.ListedColormap(COLOR_MAP )
     bounds = BOUNDS
     norm = colors.BoundaryNorm(bounds, cmap.N)
 
-    # 将图像进行染色
     colored_image = cmap(norm(image))
 
     return colored_image
