@@ -1,4 +1,3 @@
-"""Code is adapted from https://github.com/MIT-AI-Accelerator/neurips-2020-sevir. Their license is MIT License."""
 
 import os
 import os.path as osp
@@ -1085,12 +1084,10 @@ THRESHOLDS = (16, 74, 133, 160, 181, 219)
 
 def gray2color(image, **kwargs):
 
-    # 定义颜色映射和边界
     cmap = colors.ListedColormap(COLOR_MAP )
     bounds = BOUNDS
     norm = colors.BoundaryNorm(bounds, cmap.N)
 
-    # 将图像进行染色
     colored_image = cmap(norm(image))
 
     return colored_image
