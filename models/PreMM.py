@@ -194,7 +194,7 @@ class PreMM(nn.Module):
             trend_direction = "upward" if trend > 0 else "downward"
 
             prompt_parts = [
-                "The radar observation sequences are converted into image sequences using 1D and 2D convolutional layers, highlighting trends, periodic patterns, and multi-scale features for forecasting.",
+                "Motion, intensity and visual prior prompts.",
                 f"Dataset: {description}",
                 f"Task: Forecast the next {frames_out} frames using the past {frames_in} frames.",
                 f"Input statistics: min value = {min_value:.3f}, max value = {max_value:.3f}, median value = {median_value:.3f}, the overall trend is {trend_direction}."
